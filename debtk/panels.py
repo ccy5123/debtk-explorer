@@ -42,7 +42,7 @@ def scatter_vs_kow(logKow, y, limiting, name, y_title: str, kow_window=None, hig
         band = alt.Chart(pd.DataFrame({"lo": [kow_window[0]], "hi": [kow_window[1]]})).mark_rect(
             opacity=0.07, color=TEAL).encode(x="lo:Q", x2="hi:Q")
         layers.insert(0, band)
-    if highlight is not None and highlight[0] is not None:     # no log K_OW, no place on this axis
+    if highlight is not None:
         hl = alt.Chart(pd.DataFrame({"log Kow": [highlight[0]], "y": [highlight[1]],
                                      "chemical": [highlight[2]]})).mark_point(
             size=220, shape="diamond", filled=True, color=RUST).encode(

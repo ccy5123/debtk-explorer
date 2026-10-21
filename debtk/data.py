@@ -1,4 +1,4 @@
-"""What the app runs on: the 866 scanned structures and the 3,039 Add-my-Pet fish entries.
+"""What the app runs on: the single chemicals of the 866-structure scan, and the 3,039 Add-my-Pet fish entries.
 
 Both files are already built and checked elsewhere, and are read here rather than rebuilt:
 
@@ -45,7 +45,20 @@ def temperatures() -> list[float]:
 
 
 def chemical_rows() -> list[dict]:
+    """Every row of the scan, in its own order; indices into this list are what the app passes around."""
     return sim()["chemicals"]
+
+
+def is_single_chemical(c: dict) -> bool:
+    """A defined substance, with a name and a CAS number. Three rows of the scan are congener groups
+    (PCDF Cl3 and two C2-phenanthrene rows) with neither and no log K_OW; the tool does not cover them."""
+    return bool(c.get("nm") and c.get("cas"))
+
+
+@lru_cache(maxsize=1)
+def chemical_indices() -> tuple[int, ...]:
+    """The rows the app offers and charts: the single chemicals."""
+    return tuple(i for i, c in enumerate(chemical_rows()) if is_single_chemical(c))
 
 
 def chemical_label(c: dict) -> str:
@@ -59,7 +72,9 @@ def find_chemicals(query: str, limit: int | None = 60, family: str | None = None
     """
     q = (query or "").strip().lower()
     out = []
-    for i, c in enumerate(chemical_rows()):
+    rows = chemical_rows()
+    for i in chemical_indices():
+        c = rows[i]
         if family is not None and c["f"] != family:
             continue
         hay = f"{chemical_label(c)} {c.get('cas', '')} {c['f']} {c.get('h', '')}".lower()
@@ -155,7 +170,7 @@ def library(T_C: float, partition: str = "consensus") -> dict:
     pi = PARTITIONS[partition]
     out = {k: [] for k in ("logKow", "logPintr", "logD", "logPWd", "logPBd", "log_kmN", "halogens",
                            "family", "name", "measured", "measured_lo", "measured_hi", "measured_n")}
-    for c in rows:
+    for c in (rows[i] for i in chemical_indices()):
         out["logKow"].append(c["k"])
         out["logPintr"].append(c["p"][ti])
         out["logD"].append(c["dd"][ti])

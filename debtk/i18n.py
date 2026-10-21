@@ -22,7 +22,7 @@ T: dict[str, dict[str, str]] = {
     "mode_expert": {"en": "Expert", "ko": "전문가"},
     "mode_help": {"en": "Plain keeps the fish, the time course and where the loss goes. Expert adds the "
                         "whole library, the published-model benchmarks, the equations and every setting.",
-                  "ko": "간단히 보기에는 물고기, 시간 경과, 손실 경로만 둡니다. 전문가 보기에는 866종 전체, "
+                  "ko": "간단히 보기에는 물고기, 시간 경과, 손실 경로만 둡니다. 전문가 보기에는 라이브러리 전체, "
                         "기존 모델 비교, 수식, 모든 설정이 더해집니다."},
 
     # ---------------------------------------------------------------- sidebar: exposure
@@ -41,7 +41,7 @@ T: dict[str, dict[str, str]] = {
     # ---------------------------------------------------------------- sidebar: chemical
     "chemical": {"en": "Chemical", "ko": "물질"},
     "where_from": {"en": "where from", "ko": "어디서"},
-    "src_library": {"en": "the library (866)", "ko": "라이브러리 (866종)"},
+    "src_library": {"en": "the library ({n})", "ko": "라이브러리 ({n}종)"},
     "src_ctx": {"en": "look it up in CompTox", "ko": "CompTox에서 조회"},
     "src_hand": {"en": "type the numbers", "ko": "숫자 직접 입력"},
     "family": {"en": "family", "ko": "계열"},
@@ -129,8 +129,8 @@ T: dict[str, dict[str, str]] = {
     "verdict_very": {"en": "very bioaccumulative (BCF ≥ 5,000)", "ko": "고축적성 (BCF ≥ 5,000)"},
     "verdict_bio": {"en": "bioaccumulative (BCF ≥ 2,000)", "ko": "축적성 (BCF ≥ 2,000)"},
     "verdict_below": {"en": "below the BCF 2,000 screen", "ko": "BCF 2,000 기준 미만"},
-    "subtitle": {"en": "{sp}, {w:,.3g} g at {t:.0f} °C · log K_OW {k} · f = {f:.2f}",
-                 "ko": "{sp}, {w:,.3g} g, {t:.0f} °C · log K_OW {k} · f = {f:.2f}"},
+    "subtitle": {"en": "{sp}, {w:,.3g} g at {t:.0f} °C · log K_OW {k:.2f} · f = {f:.2f}",
+                 "ko": "{sp}, {w:,.3g} g, {t:.0f} °C · log K_OW {k:.2f} · f = {f:.2f}"},
     "m_bcf": {"en": "steady-state BCF", "ko": "정상상태 BCF"},
     "m_k1": {"en": "uptake k₁", "ko": "흡수 k₁"},
     "m_k1_delta": {"en": "limited by the {lim}", "ko": "{lim}이(가) 제한"},
@@ -169,7 +169,7 @@ T: dict[str, dict[str, str]] = {
     "tab_fish": {"en": "The fish", "ko": "물고기"},
     "tab_time": {"en": "Time course", "ko": "시간 경과"},
     "tab_loss": {"en": "Where the loss goes", "ko": "손실 경로"},
-    "tab_library": {"en": "Across the library", "ko": "866종 전체"},
+    "tab_library": {"en": "Across the library", "ko": "라이브러리 전체"},
     "tab_bench": {"en": "Benchmarks and limits", "ko": "기존 모델·제한단계"},
     "tab_compare": {"en": "Compare ({n})", "ko": "비교 ({n})"},
     "tab_batch": {"en": "Score a list", "ko": "목록 채점"},
@@ -368,6 +368,8 @@ T: dict[str, dict[str, str]] = {
               "(Lee & Joe, ChemRxiv 10.26434/chemrxiv.15002330/v1). Its code reproduces an earlier scan of 866 "
               "persistent organic structures on three fish — rainbow trout 10 g at 15 °C, guppy 0.1 g at "
               "22 °C, fathead minnow 0.4 g at 25 °C — for all 2,598 fish–chemical pairs to better than 1e-9. "
+              "Three entries of that scan are congener groups (one trichlorodibenzofuran group, two "
+              "C2-phenanthrene groups) rather than single chemicals, and this app leaves them out. "
               "Growth is integrated as the framework's eq 7; the dietary pathway (its eq 9–10, BAF and BMF) "
               "is **not** implemented, so everything here is water exposure only.\n\n"
               "Those three fish are the only ones with measured data behind their settings. Any other fish is "
@@ -377,7 +379,9 @@ T: dict[str, dict[str, str]] = {
         "ko": "이 앱은 자라는 물고기가 물에서 물질을 생물농축하는 정도를 DEB-TK 틀(Lee & Joe, ChemRxiv "
               "10.26434/chemrxiv.15002330/v1)로 계산합니다. 코드는 앞서 수행한 계산 — 잔류성 유기 구조 866종을 "
               "세 어종(무지개송어 10 g·15 °C, 구피 0.1 g·22 °C, 팻헤드미노 0.4 g·25 °C)에 돌린 것 — 의 "
-              "2,598개 물고기–물질 쌍을 1e-9보다 작은 차이로 재현합니다. 성장 적분은 이 틀의 eq 7이며, 먹이 "
+              "2,598개 물고기–물질 쌍을 1e-9보다 작은 차이로 재현합니다. 그 계산의 세 항목(트리클로로디벤조퓨란 묶음 "
+              "하나, C2-페난트렌 묶음 둘)은 개별 물질이 아닌 동족체 묶음이라 이 앱에서는 뺐습니다. "
+              "성장 적분은 이 틀의 eq 7이며, 먹이 "
               "경로(eq 9–10의 BAF·BMF)는 **구현되어 있지 않습니다**. 따라서 여기 있는 모든 것은 물 노출만입니다.\n\n"
               "측정 자료가 설정을 뒷받침하는 것은 이 세 종뿐입니다. 그 밖의 어종은 같은 화학을 그 동물의 "
               "Add-my-Pet 생리로 돌린 것이고, 측정된 흡수 plateau도 없습니다. 측정 BCF는 여러 종과 노출경로를 "
@@ -398,9 +402,9 @@ T: dict[str, dict[str, str]] = {
               "{verdict}. 거기까지 {pct:.0f}%에 도달하는 데 {t95:,.0f}일이 걸립니다. 몸에서 빠져나가는 양 중 "
               "{lossshare:.0f}%는 아가미로 되나가고 나머지는 자라면서 희석됩니다{met}."},
     "plain_met": {"en": ", with {p:.0f}% broken down by the liver", "ko": ", 그중 {p:.0f}%는 간에서 분해됩니다"},
-    "plain_more": {"en": "Switch Detail to Expert for the whole 866-structure library, the comparison against "
+    "plain_more": {"en": "Switch Detail to Expert for the whole library, the comparison against "
                          "the published models, and every setting.",
-                   "ko": "보기 수준을 전문가로 바꾸면 866종 전체, 기존 모델과의 비교, 모든 설정이 나옵니다."},
+                   "ko": "보기 수준을 전문가로 바꾸면 라이브러리 전체, 기존 모델과의 비교, 모든 설정이 나옵니다."},
 }
 
 
