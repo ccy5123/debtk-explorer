@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" width="860" height="400">
+  <!-- Drawn by the author (supplied 2026-10-20). The part ids are the contract: code recolours these and
+       nothing else, and hangs the flux arrows on the anchors at the end. -->
+  <path id="fish-tail" d="M 262,176 L 222,174 C 200,170 168,146 130,108 C 142,140 152,170 160,191 C 152,212 142,242 130,272 C 168,236 200,212 222,208 L 262,206 Z" fill="#b7d6e6" stroke="#999" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <g id="fish-fins" fill="#b7d6e6" stroke="#999" stroke-width="1.5" stroke-linejoin="round">
+    <path d="M 488,122 L 481,108 C 472,90 462,72 454,60 C 438,66 414,84 392,112 L 394,124 Z"/>
+    <path d="M 305,160 C 299,138 282,129 263,132 C 267,143 266,154 259,167 L 300,172 Z"/>
+    <path d="M 346,244 L 339,249 C 331,264 318,275 303,283 C 299,268 292,248 282,230 L 290,224 Z"/>
+    <path d="M 472,254 L 467,262 C 456,276 441,286 420,292 C 418,280 420,270 425,262 L 432,254 Z"/>
+    <path d="M 606,232 L 596,246 C 585,262 566,274 540,281 C 546,268 553,254 562,241 L 572,234 Z"/>
+  </g>
+
+  <path id="fish-body" d="M 222,174 C 280,160 340,118 430,112 C 520,106 600,118 650,140 C 684,154 711,168 721,185 C 727,195 719,206 706,210 C 680,222 640,238 590,247 C 520,260 460,266 420,264 C 340,258 270,222 222,208" fill="#6fa8c9" stroke="#999" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <path id="fish-muscle" d="M 604,158 C 550,128 440,120 350,140 C 300,152 262,168 240,182 C 320,176 470,170 604,158 Z" fill="#9cc5dc"/>
+
+  <path id="fish-liver" d="M 598,213 C 592,201 566,198 542,203 C 522,207 510,219 518,230 C 528,240 556,241 574,235 C 590,230 603,223 598,213 Z" fill="#8e5a3c" stroke="#999" stroke-width="1"/>
+
+  <path id="fish-gill" d="M 636.9,152.1 L 634.6,154.4 L 632.4,156.7 L 630.3,159.2 L 628.2,161.7 L 626.3,164.3 L 624.5,167.0 L 622.7,169.8 L 621.1,172.6 L 619.6,175.5 L 618.2,178.5 L 616.9,181.6 L 615.8,184.7 L 614.8,187.9 L 613.9,191.1 L 613.1,194.4 L 612.5,197.7 L 612.0,201.1 L 611.6,204.6 L 611.4,208.1 L 611.4,211.6 L 611.5,215.2 L 611.7,218.9 L 612.1,222.6 L 612.7,226.3 L 613.4,230.0 L 614.3,233.8 L 611.2,234.6 L 605.8,231.7 L 608.1,227.1 L 601.5,224.0 L 606.1,219.4 L 598.6,215.9 L 605.0,211.7 L 597.0,207.6 L 604.7,204.0 L 596.5,199.2 L 605.3,196.5 L 597.2,191.0 L 606.6,189.3 L 599.0,183.1 L 608.7,182.2 L 601.8,175.6 L 611.5,175.6 L 605.6,168.7 L 615.0,169.3 L 610.3,162.4 L 619.1,163.5 L 615.8,156.9 L 623.8,158.3 L 622.1,152.3 L 629.0,153.6 L 629.1,148.9 L 634.7,149.8 Z" fill="#d9534f" stroke="#999" stroke-width="0.8" stroke-linejoin="round"/>
+
+  <g id="fish-blood" fill="none" stroke-linecap="round">
+    <path d="M 603,172 C 588,150 545,138 470,141 C 400,144 322,158 270,174" stroke="#8D9B98" stroke-width="6.5"/>
+    <path d="M 603,172 C 588,150 545,138 470,141 C 400,144 322,158 270,174" stroke="#c0392b" stroke-width="4"/>
+  </g>
+
+  <g id="fish-static" stroke="#999" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 221,179.8 Q 190,164.5 148.2,133.9 M 221,183.5 Q 190,173.2 157.2,152.6 M 221,187.2 Q 190,181.9 163.6,171.3 M 221,191.0 Q 190,190.6 166.0,190.0 M 221,194.8 Q 190,199.3 163.6,208.8 M 221,198.5 Q 190,208.1 157.2,227.5 M 221,202.2 Q 190,216.8 148.2,246.2 M 468,111 L 452,70 M 452,112 L 438,76 M 436,113 L 424,84 M 420,114 L 410,94" fill="none" stroke-width="0.8" opacity="0.7"/>
+    <path d="M 598,164 C 540,172 420,182 232,190" fill="none" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <path d="M 654,157 C 643,180 642,204 651,222" fill="none" stroke-width="1.2"/>
+    <path d="M 640,150 C 617,170 605,202 616,238" fill="none" stroke-width="2"/>
+    <path d="M 719,196 C 708,200 694,204 684,206" fill="none" stroke-width="1.6"/>
+    <circle cx="702" cy="179" r="2" fill="#777" stroke="none"/>
+    <circle cx="681" cy="174" r="10" fill="#ffffff" stroke-width="1.5"/>
+    <circle cx="682" cy="174" r="5.5" fill="#222222" stroke="none"/>
+    <circle cx="684" cy="172" r="1.6" fill="#ffffff" stroke="none"/>
+  </g>
+
+  <!-- where the fluxes attach (invisible) -->
+  <circle id="anchor-gill"  cx="612" cy="198" r="1" opacity="0"/>
+  <circle id="anchor-liver" cx="550" cy="240" r="1" opacity="0"/>
+  <circle id="anchor-tail"  cx="236" cy="191" r="1" opacity="0"/>
+  <circle id="anchor-label" cx="410" cy="222" r="1" opacity="0"/>
+  <circle id="anchor-mouth" cx="739" cy="190" r="1" opacity="0"/>
+</svg>
