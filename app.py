@@ -59,6 +59,11 @@ def L(key: str, **fmt) -> str:
     return i18n.t(key, lang, **fmt)
 
 
+def kow_text(v) -> str:
+    """log K_OW for display; three congener-group rows have none, and the model does not need one."""
+    return "n/a" if v is None or not np.isfinite(v) else f"{v:.2f}"
+
+
 expert = c_mode.toggle(L("mode_expert"), value=True, help=L("mode_help"))
 st.sidebar.divider()
 
@@ -93,10 +98,12 @@ custom_note = ""
 
 if source == SOURCES[0]:
     fams = sorted({c["f"] for c in D.chemical_rows()})
-    fam = st.sidebar.selectbox(L("family"), [L("all")] + fams)
-    cq = st.sidebar.text_input(L("search_chem"), "hexachlorobenzene")
-    hits = [i for i in D.find_chemicals(cq, limit=400)
-            if fam == L("all") or D.chemical_rows()[i]["f"] == fam]
+    st.session_state.setdefault("chem_q", "hexachlorobenzene")
+    # a new family starts from its whole list: the search that was typed belongs to the last one
+    fam = st.sidebar.selectbox(L("family"), [L("all")] + fams,
+                               on_change=lambda: st.session_state.update(chem_q=""))
+    cq = st.sidebar.text_input(L("search_chem"), key="chem_q")
+    hits = D.find_chemicals(cq, limit=None, family=None if fam == L("all") else fam)
     if not hits:
         st.sidebar.warning(L("no_chem_match"))
         st.stop()
@@ -104,7 +111,7 @@ if source == SOURCES[0]:
     def chem_option(i: int) -> str:
         c = D.chemical_rows()[i]
         mb = c.get("mb")
-        return (f"{D.chemical_label(c)} — log Kow {c['k']:.2f}"
+        return (f"{D.chemical_label(c)} — log Kow {kow_text(c['k'])}"
                 + (" · " + L("measured_logbcf_short", v=mb[0]) if mb else ""))
 
     ci = st.sidebar.selectbox(L("one_match") if len(hits) == 1 else L("n_matches", n=len(hits)),
@@ -235,7 +242,7 @@ verdict = (L("verdict_very"), "warn") if BCF >= 5000 else \
 left, right = st.columns([5, 2])
 left.title(chem.name)
 left.markdown("<span class='note'>" + L("subtitle", sp=D.species_label(species), w=W_g, t=T_C,
-                                        k=chem.logKow, f=f_food) + "</span>", unsafe_allow_html=True)
+                                        k=kow_text(chem.logKow), f=f_food) + "</span>", unsafe_allow_html=True)
 sc = D.self_check()
 sc_ok = sc["worst"] < 0.01
 right.markdown(
@@ -422,8 +429,9 @@ with tabs[4]:
         ks = np.round(np.arange(2.5, 9.01, 0.25), 2)
         wmax = float(min(ent["Ww_i"], 1e5))
         ws = np.unique(np.round(np.logspace(np.log10(max(0.01, wmax * 1e-5)), np.log10(wmax), 22), 3))
-        order = np.argsort(lib["logKow"])
-        ip = {k: np.interp(ks, lib["logKow"][order], lib[k][order])
+        has_kow = np.isfinite(lib["logKow"])            # congener groups carry no log K_OW
+        order = np.argsort(lib["logKow"][has_kow])
+        ip = {k: np.interp(ks, lib["logKow"][has_kow][order], lib[k][has_kow][order])
               for k in ("logPintr", "logD", "logPWd", "logPBd")}
         grid = []
         for W in ws:

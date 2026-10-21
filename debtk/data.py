@@ -52,18 +52,20 @@ def chemical_label(c: dict) -> str:
     return c.get("nm") or f"{c['f']} {c.get('h', '')}".strip()
 
 
-def find_chemicals(query: str, limit: int = 60) -> list[int]:
-    """Indices into chemical_rows() whose name, CAS or family contains the query."""
+def find_chemicals(query: str, limit: int | None = 60, family: str | None = None) -> list[int]:
+    """Indices into chemical_rows() whose name, CAS or family contains the query, within one family if given.
+
+    The family is applied before the limit, so a family that sits late in the table is not cut off.
+    """
     q = (query or "").strip().lower()
-    rows = chemical_rows()
-    if not q:
-        return list(range(min(limit, len(rows))))
     out = []
-    for i, c in enumerate(rows):
+    for i, c in enumerate(chemical_rows()):
+        if family is not None and c["f"] != family:
+            continue
         hay = f"{chemical_label(c)} {c.get('cas', '')} {c['f']} {c.get('h', '')}".lower()
         if q in hay:
             out.append(i)
-            if len(out) >= limit:
+            if limit is not None and len(out) >= limit:
                 break
     return out
 
