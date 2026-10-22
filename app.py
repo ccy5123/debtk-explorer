@@ -25,7 +25,19 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from debtk import ctx, data as D, fish_svg, i18n, model as M, panels as PN    # noqa: E402
+# Streamlit Community Cloud keeps sys.modules warm across republishes (only app.py is auto-reloaded by its
+# watchdog), so a submodule changed in this republish is still the old one in a running process. Reload the
+# submodules explicitly before the bindings here are set; order matters only in that debtk.model must be
+# fresh before data (which imports it) is reloaded.
+import importlib                                                                   # noqa: E402
+for _name in ("debtk.model", "debtk.i18n", "debtk.ctx", "debtk.fish_svg",
+              "debtk.panels", "debtk.data"):
+    try:
+        _mod = importlib.import_module(_name)
+        importlib.reload(_mod)
+    except Exception:                                                              # noqa: BLE001
+        pass
+from debtk import ctx, data as D, fish_svg, i18n, model as M, panels as PN         # noqa: E402
 
 st.set_page_config(page_title="Fish bioaccumulation (DEB-TK)", layout="wide", page_icon="🐟")
 
@@ -367,13 +379,21 @@ if not expert:
     st.stop()
 
 # ---------------------------------------------------------------- 3b. food uptake (dietary pathway)
+# The dietary thresholds are kept here as local literals rather than imported through M.*: Streamlit
+# Community Cloud keeps the Python module cache across republishes (only app.py is auto-reloaded by its
+# watchdog), so a new constant added to debtk/model.py is not visible to a still-running app process until
+# the app is rebooted. Keeping the literal here lets a module-level change arrive on a plain republish.
+_HEPTA_HALOGENS = 7                             # synced with debtk.model.HEPTA_HALOGENS (dietary arc 2026-10-22)
+_ALPHA_F_LOW = 0.30                             # synced with debtk.model.ALPHA_F_LOW
+_ALPHA_F_CENTRAL = 0.55                         # synced with debtk.model.ALPHA_F_CENTRAL
+
 with tabs[3]:
     st.markdown(L("diet_intro"))
     nh = D.chemical_rows()[ci].get("nh", 0) if ci is not None else (custom_in[2] if custom_in else 0)
-    if nh is not None and nh >= M.HEPTA_HALOGENS:
+    if nh is not None and nh >= _HEPTA_HALOGENS:
         st.warning(L("diet_warning_hepta", n=int(nh)))
     d1, d2 = st.columns([1, 1])
-    alpha_f = d1.slider(L("diet_alpha_f"), float(M.ALPHA_F_LOW), 1.0, float(M.ALPHA_F_CENTRAL), 0.01,
+    alpha_f = d1.slider(L("diet_alpha_f"), float(_ALPHA_F_LOW), 1.0, float(_ALPHA_F_CENTRAL), 0.01,
                         help=L("diet_alpha_help"))
     c_X = d2.number_input(L("diet_cx"), min_value=0.0, value=1.0, format="%.4g",
                           help=L("diet_cx_help"))
