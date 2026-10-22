@@ -27,6 +27,7 @@ else:
 
 PARTITIONS = {"consensus": 0, "RDKit descriptors": 1, "package (m6)": 2}
 AMP_PARS = ("p_Am", "v", "kap", "p_M", "E_G", "T_A", "k_J", "kap_R", "E_Hp", "kap_X", "kap_P", "s_M", "Ww_p")
+AMP_FEEDING = ("p_Xm", "J_X_Am")                       # surface-specific feeding rates (derive_feeding_rates.py)
 AMP_CHEM = ("d_V", "d_E", "mu_X", "mu_V", "mu_E", "mu_P")
 
 
@@ -133,6 +134,7 @@ def make_fish(key: str, W_g: float, T_C: float, f: float = 1.0, gill: str = "AmP
     """An animal from its AmP entry and one of the fitted gill-geometry sets."""
     e = fish_entries()[key]
     par = {k: e[k] for k in AMP_PARS}
+    par.update({k: e[k] for k in AMP_FEEDING if k in e})
     par.update({k: e[k] for k in AMP_CHEM if k in e})
     s = gill_sets()[gill]
     return M.Fish(par=par, del_M=e.get("dm") or 0.10543, W_g=W_g, T_C=T_C, f=f,

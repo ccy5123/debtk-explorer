@@ -266,8 +266,9 @@ st.caption(L("loss_caption", ker=r["k_er"], kg=r["k_g"],
 
 # ============================================================ tabs
 if expert:
-    tabs = st.tabs([L("tab_fish"), L("tab_time"), L("tab_loss"), L("tab_library"), L("tab_bench"),
-                    L("tab_compare", n=len(st.session_state.pinned)), L("tab_batch"), L("tab_model")])
+    tabs = st.tabs([L("tab_fish"), L("tab_time"), L("tab_loss"), L("tab_diet"), L("tab_library"),
+                    L("tab_bench"), L("tab_compare", n=len(st.session_state.pinned)), L("tab_batch"),
+                    L("tab_model")])
 else:
     tabs = st.tabs([L("tab_fish"), L("tab_time"), L("tab_loss")])
     st.caption(L("plain_more"))
@@ -365,6 +366,41 @@ with tabs[2]:
 if not expert:
     st.stop()
 
+# ---------------------------------------------------------------- 3b. food uptake (dietary pathway)
+with tabs[3]:
+    st.markdown(L("diet_intro"))
+    nh = D.chemical_rows()[ci].get("nh", 0) if ci is not None else (custom_in[2] if custom_in else 0)
+    if nh is not None and nh >= M.HEPTA_HALOGENS:
+        st.warning(L("diet_warning_hepta", n=int(nh)))
+    d1, d2 = st.columns([1, 1])
+    alpha_f = d1.slider(L("diet_alpha_f"), float(M.ALPHA_F_LOW), 1.0, float(M.ALPHA_F_CENTRAL), 0.01,
+                        help=L("diet_alpha_help"))
+    c_X = d2.number_input(L("diet_cx"), min_value=0.0, value=1.0, format="%.4g",
+                          help=L("diet_cx_help"))
+    diet = M.diet_rates(fish, chem, alpha_f=alpha_f, kBt=kBt, ker_route=route_key, plateau=plateau)
+    a_lo, a_hi = M.alpha_f_interval(alpha_f)
+    bmf_lo = a_lo * diet["G_D"] / diet["k2"] if diet["k2"] > 0 else float("inf")
+    bmf_hi = a_hi * diet["G_D"] / diet["k2"] if diet["k2"] > 0 else float("inf")
+    ing = M.ingestion(fish)
+    dm1, dm2, dm3, dm4 = st.columns(4)
+    dm1.metric(L("diet_m_bmf"), f"{diet['BMF']:.3f}",
+               L("diet_m_bmf_delta", lo=bmf_lo, hi=bmf_hi), delta_color="off",
+               help=L("diet_m_bmf_help"))
+    dm2.metric(L("diet_m_cfish"), f"{diet['BMF'] * c_X:,.3g} ng/g", delta_color="off")
+    dm3.metric(L("diet_m_gd"), f"{diet['G_D']:.3g} d⁻¹",
+               L("diet_m_gd_delta", v=diet["G_D"]), delta_color="off")
+    dm4.metric(L("diet_m_t95"), f"{np.log(20) / diet['k2']:,.0f} d" if diet["k2"] > 0 else "—",
+               delta_color="off")
+    st.caption(L("diet_bmf_caption", k2=diet["k2"], a=alpha_f))
+    st.info(L("diet_gap", model=1.00, meas=0.50))
+    st.markdown(L("diet_formula_h"))
+    st.latex(r"\mathrm{BMF}=\frac{\alpha_f\,G_D}{\dot{k}_{e,r}+\dot{k}_{Bt}+\dot{k}_g},\qquad "
+             r"G_D=\frac{c_T\,f\,p_{Xm}\,s_M^{\mathrm{eff}}\,L^{2}\,W_{X,\mathrm{mol}}/d_X}{W}")
+    st.markdown(L("diet_formula_body",
+                  pxm=fish.par.get("p_Xm") or fish.par["p_Am"] / fish.par["kap_X"],
+                  gd=diet["G_D"]))
+    st.caption(L("diet_unavail"))
+
 # ---------------------------------------------------------------- the library, for three expert tabs
 lib = D.library(T_C, partition)
 fr = M.frame(fish, lib["logKow"], lib["logPintr"], lib["logD"], lib["logPWd"], lib["logPBd"],
@@ -377,7 +413,7 @@ rec = D.record()
 kow_window = (rec.get("kow_lo"), rec.get("kow_hi")) if rec.get("kow_lo") else None
 
 # ---------------------------------------------------------------- 4. across the library
-with tabs[3]:
+with tabs[4]:
     segs = [L("seg_k1"), L("seg_ker"), L("seg_bcf"), L("seg_inputs")]
     what = st.segmented_control(L("show"), segs, default=segs[0])
     st.caption(L("lib_caption", n=int(keep.sum()), tot=len(keep))
@@ -405,7 +441,7 @@ with tabs[3]:
         st.caption(L("inputs_caption"))
 
 # ---------------------------------------------------------------- 5. benchmarks and limits
-with tabs[4]:
+with tabs[5]:
     bsegs = [L("seg_bench"), L("seg_limit"), L("seg_k2")]
     which = st.segmented_control(L("show"), bsegs, default=bsegs[0], key="bench_seg")
     if which == bsegs[0]:
@@ -471,7 +507,7 @@ with tabs[4]:
                      b=bcf_const[-1] / bcf_mech[-1], lb=ls[-1]))
 
 # ---------------------------------------------------------------- 6. compare
-with tabs[5]:
+with tabs[6]:
     if not st.session_state.pinned:
         st.info(L("compare_empty"))
     else:
@@ -499,7 +535,7 @@ with tabs[5]:
         st.caption(L("compare_caption"))
 
 # ---------------------------------------------------------------- 7. score a list
-with tabs[6]:
+with tabs[7]:
     st.markdown(L("batch_intro"))
     bkey = ctx.api_key(st.session_state.get("ctx_key"))
     if not bkey:
@@ -563,7 +599,7 @@ with tabs[6]:
         st.caption(L("batch_caption"))
 
 # ---------------------------------------------------------------- 8. the model
-with tabs[7]:
+with tabs[8]:
     st.markdown(L("model_written"))
     st.latex(r"\mathrm{BCF}=\frac{P_{Wd}}"
              r"{1+\dot{k}_{Bt}/\dot{k}_{e,r}+3\dot{r}_B\,(f-l)\,/\,(l\,\dot{k}_{e,r})}"

@@ -169,6 +169,7 @@ T: dict[str, dict[str, str]] = {
     "tab_fish": {"en": "The fish", "ko": "물고기"},
     "tab_time": {"en": "Time course", "ko": "시간 경과"},
     "tab_loss": {"en": "Where the loss goes", "ko": "손실 경로"},
+    "tab_diet": {"en": "Food uptake", "ko": "먹이 섭취"},
     "tab_library": {"en": "Across the library", "ko": "라이브러리 전체"},
     "tab_bench": {"en": "Benchmarks and limits", "ko": "기존 모델·제한단계"},
     "tab_compare": {"en": "Compare ({n})", "ko": "비교 ({n})"},
@@ -230,6 +231,90 @@ T: dict[str, dict[str, str]] = {
     "y_loss": {"en": "loss flux (ng kg⁻¹ d⁻¹)", "ko": "배출 유량 (ng kg⁻¹ /일)"},
     "share_axis": {"en": "share of the total loss at the current size",
                    "ko": "현재 체격에서 전체 손실 중 비율"},
+
+    # ---------------------------------------------------------------- diet
+    "diet_intro": {
+        "en": "A fish that eats contaminated food takes the chemical in with its ration. The DEB-TK framework "
+              "sets the ingestion rate from the animal's own feeding allometry (p_Xm, J_X_Am), and the "
+              "whole-gut assimilation efficiency α_f gates what crosses from the lumen into the blood. The "
+              "steady-state BMF against a constant food concentration, with water clean, is "
+              "**α_f · G_D / (k_e,r + k_Bt + k_g)**: the loss terms are the gill's own and the growth "
+              "dilution the explorer already carries, so eating in clean water does not change the "
+              "elimination side.",
+        "ko": "오염된 먹이를 먹는 물고기는 섭식과 함께 물질을 받습니다. DEB-TK 틀은 섭식속도를 그 동물 자신의 "
+              "섭식 상대성장식(p_Xm, J_X_Am)으로 정하고, 전장(全腸) 흡수효율 α_f가 소화관에서 혈액으로 넘어가는 "
+              "비율을 결정합니다. 깨끗한 물에서 일정 농도의 먹이를 먹을 때의 정상상태 BMF는 "
+              "**α_f · G_D / (k_e,r + k_Bt + k_g)**입니다. 손실 항은 이미 사이드바가 계산하는 아가미와 성장 "
+              "희석이며, 깨끗한 물에서 먹기만 하는 경우에도 배출 쪽은 그대로입니다."},
+    "diet_warning_hepta": {
+        "en": "⚠ This structure has {n} halogen atoms. The plug-flow bound this app reports was refuted "
+              "outright by the dietary arc (ieam-p8-alphaf, 2026-10-22) at and beyond seven halogens on "
+              "biphenyls — the BMF below is a formula, not a defended number, for this chemical.",
+        "ko": "⚠ 이 물질은 할로겐 원자 {n}개를 가집니다. 이 앱이 쓰는 플러그 흐름(plug-flow) 상한은 "
+              "비페닐 할로겐 7개 이상에서 완전히 기각되었습니다(ieam-p8-alphaf, 2026-10-22). 이 물질에 대한 "
+              "아래의 BMF는 수식일 뿐 방어된 수치가 아닙니다."},
+    "diet_alpha_f": {"en": "assimilation efficiency α_f", "ko": "흡수효율 α_f"},
+    "diet_alpha_help": {
+        "en": "central 0.55 for persistent neutral chemicals, bracket 0.30–0.80 from the gut-elimination "
+              "sizing (2026-10-21). The lab-reproducibility floor is 0.12 in log10 — the band on the number "
+              "below is that interval. The plug-flow mechanistic bound predicts α_f near 1 and is flat "
+              "across hydrophobicity, while the pooled measurements centre at about 0.5: the model predicts "
+              "the flatness but not the level, and closing the gap needs an unmeasured ~0.195 µm aqueous "
+              "boundary layer.",
+        "ko": "지속성 중성 물질의 중앙값 0.55, 괄호 0.30~0.80. gut-elimination sizing(2026-10-21)에서 가져온 "
+              "값입니다. 실험실 재현성의 바닥선은 log10 척도에서 0.12이고, 아래 숫자의 띠가 그 구간입니다. "
+              "플러그 흐름 기계론 상한은 α_f ≈ 1에서 소수성에 무관하게 평평하게 나오지만, 측정값의 중심은 "
+              "약 0.5입니다. 모델은 평평함은 맞히지만 높이는 틀립니다. 그 간격을 메우려면 측정되지 않은 "
+              "약 0.195 µm의 수층 경계층이 있어야 합니다."},
+    "diet_cx": {"en": "chemical in food (ng/g wet)", "ko": "먹이 중 물질 농도 (ng/g 습중량)"},
+    "diet_cx_help": {"en": "constant food concentration; the steady-state BMF scales linearly with this",
+                     "ko": "일정한 먹이 중 농도. 정상상태 BMF는 이 값에 선형으로 비례합니다"},
+    "diet_m_bmf": {"en": "steady-state BMF", "ko": "정상상태 BMF"},
+    "diet_m_bmf_help": {"en": "C_fish / c_food at steady state, dimensionless (g chem / g fish ÷ g chem / g food)",
+                        "ko": "정상상태에서 물고기 농도 ÷ 먹이 농도 (무차원)"},
+    "diet_m_bmf_delta": {"en": "band {lo:.2f}–{hi:.2f} at the α_f ±0.12 log interval",
+                         "ko": "α_f ±0.12 log 구간에서 띠 {lo:.2f}~{hi:.2f}"},
+    "diet_m_cfish": {"en": "C_fish at steady state", "ko": "정상상태 체내 농도"},
+    "diet_m_gd": {"en": "ingestion rate G_D", "ko": "섭식률 G_D"},
+    "diet_m_gd_delta": {"en": "{v:.3g} g food wet / g fish wet / d", "ko": "{v:.3g} g 먹이 / g 물고기 / 일"},
+    "diet_m_t95": {"en": "time to 95% from food", "ko": "먹이 노출에서 95% 도달 시간"},
+    "diet_gap": {
+        "en": "**Model vs measured — a factor of two.** The dietary arc's plug-flow bound predicts α_f near "
+              "**{model:.2f}** (nearly flat across hydrophobicity, sd 0.009 against the 0.12 log "
+              "reproducibility floor), while the pooled measurements centre at **≈ {meas:.2f}**. The slider "
+              "default 0.55 sits with the measurement, not with the bound. Pick 0.80 for the upper bracket; "
+              "pick 1.0 to read the bound itself.",
+        "ko": "**모델 vs 측정 — 약 2배의 간격.** 식이 아크의 플러그 흐름 상한은 α_f ≈ **{model:.2f}**를 예측하며 "
+              "소수성에 걸쳐 거의 평평합니다(표준편차 0.009, 재현성 바닥 0.12 log). 반면 측정값의 중심은 "
+              "**≈ {meas:.2f}**입니다. 슬라이더 기본값 0.55는 측정 쪽에 서 있습니다. 상한의 바깥 괄호는 0.80, "
+              "상한 자체를 보려면 1.0을 고르세요."},
+    "diet_formula_h": {"en": "#### How the ingestion rate comes out of the AmP entry",
+                       "ko": "#### 섭식률은 AmP entry에서 어떻게 나오는가"},
+    "diet_formula_body": {
+        "en": "p_Xm is the maximum surface-specific feeding power. It is set by the digestion efficiency on "
+              "top of assimilation (p_Xm = p_Am / kap_X); its molar form J_X_Am = p_Xm / mu_X. The ingestion "
+              "flux at length L is c_T · f · p_Xm · s_M_eff · L²; converted to wet mass against the addchem "
+              "defaults (W_X_mol = 23.9 g per C-mol dry, d_X = 0.2 wet) and divided by body weight it is G_D "
+              "(g food wet / g fish wet / d). For this animal at this size and temperature: "
+              "p_Xm = **{pxm:,.1f} J·d⁻¹·cm⁻²**, G_D = **{gd:.4g}**.",
+        "ko": "p_Xm은 표면 단위당 최대 섭식 power입니다. 흡수 위에 소화 효율이 곱해져 정해집니다 "
+              "(p_Xm = p_Am / kap_X). 몰 단위 형태는 J_X_Am = p_Xm / mu_X입니다. 체장 L에서의 섭식 플럭스는 "
+              "c_T · f · p_Xm · s_M_eff · L²이고, addchem 기본값(W_X_mol = 건중량 C-mol당 23.9 g, d_X = "
+              "0.2 wet)을 써서 wet mass로 변환한 뒤 체중으로 나누면 G_D(g 먹이 wet / g 물고기 wet / 일)가 "
+              "됩니다. 이 어종, 이 체격, 이 수온에서: p_Xm = **{pxm:,.1f} J·일⁻¹·cm⁻²**, G_D = **{gd:.4g}**."},
+    "diet_bmf_caption": {
+        "en": "BMF above k_er + k_Bt + k_g = **{k2:.4g}** d⁻¹, α_f = **{a:.2f}**. The band is the α_f ±0.12 "
+              "log interval, read against the model's own BMF formula, not against measurement.",
+        "ko": "BMF은 k_er + k_Bt + k_g = **{k2:.4g}** /일, α_f = **{a:.2f}**를 적용했습니다. 띠는 "
+              "α_f ±0.12 log 구간이며, 이 모델의 BMF 수식 자체에 대해 그려진 것이고 측정과의 비교는 아닙니다."},
+    "diet_unavail": {
+        "en": "The dietary arc records that gut-wall biotransformation (eq 1 gut term) and the luminal "
+              "aqueous-layer resistance that closes the model-vs-measured gap are **not buildable** from "
+              "current data — 4 chemicals in 1 species worldwide for the gut wall, no measurement at all "
+              "for the lumen. The app does not fabricate them.",
+        "ko": "식이 아크의 기록에 따르면, 모델과 측정의 간격을 메우는 장벽 생물전환(식(1)의 장 소실항)과 "
+              "장관 내 수층 저항은 **현재 자료로는 쌓을 수 없습니다** — 장벽은 전 세계에서 4개 물질 × 1종, "
+              "장관은 측정 자체가 없습니다. 앱은 이를 지어내지 않습니다."},
 
     # ---------------------------------------------------------------- library
     "show": {"en": "show", "ko": "표시"},

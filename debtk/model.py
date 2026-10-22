@@ -213,6 +213,91 @@ def bcf(fish: Fish, chem: Chemical, kBt: str = "zero", ker_route: str = "mechani
     return 10 ** chem.logPWd / (1.0 + r["k_Bt"] / r["k_er"] + r["k_g"] / r["k_er"])
 
 
+# ---------------------------------------------------------------------------- dietary pathway
+# The DEB-TK framework writes the food-exposed burden as (companion eq 9, growing animal, k_1 c_d dropped):
+#   dC/dt = alpha_f * G_D * c_X - (k_e,r + k_Bt + k_g) * C                                        (per day)
+# where G_D is the specific ingestion rate (g food wet / g fish wet / d), set by the DEB primary p_Xm. The
+# steady state is BMF = C/c_X = alpha_f * G_D / (k_e,r + k_Bt + k_g).
+#
+# alpha_f is the whole-gut assimilation efficiency for the chemical. The dietary arc on this project
+# (ieam-p8-alphaf, 2026-10-22) records the plug-flow mechanistic bound and the measured central value and
+# their gap: the measurement is a factor of two below the bound, and the bound fails outright at seven
+# heptachlorobiphenyls. The app does not try to resolve the gap - it reports the central value with the
+# lab-reproducibility interval, the bracket, and the heptachlorination domain limit, so the reader sees the
+# discrepancy rather than one number alone.
+ALPHA_F_CENTRAL = 0.55
+ALPHA_F_LOW, ALPHA_F_HIGH = 0.30, 0.80           # bracket, central case for persistent neutral chemicals
+ALPHA_F_LOG10_SD = 0.12                          # lab reproducibility floor (dietary arc 2026-10-22)
+HEPTA_HALOGENS = 7                               # the plug-flow bound fails at and beyond this many halogens
+
+# The chemical potential of food and the per-C-mol dry mass that convert p_Xm to a wet mass flux. d_X is the
+# addchem default food dry-mass fraction; the AmP primaries use d_V for the organism and d_X falls on the
+# same value in the published addchem.
+D_X_DEFAULT = 0.2
+W_X_MOL_DEFAULT = float(W_O[0])                  # 23.9 g dry food per C-mol with the addchem n_O defaults
+
+
+def ingestion(fish: "Fish") -> dict:
+    """DEB ingestion at the animal's current size, food level and temperature.
+
+        p_X    = c_T * f * p_Xm * s_M_eff * L^2      (J / d)
+        J_X    = p_X / mu_X                           (mol-C / d)
+        G_dry  = J_X * W_X_mol                        (g dry food / d)
+        G_wet  = G_dry / d_X                          (g wet food / d)
+        G_D    = G_wet / W_g                          (g wet food / g fish wet / d)
+
+    s_M_eff = s_M where l > 1 (metabolic acceleration applies to p_Xm the same way it does to p_Am), and 1
+    otherwise. The addchem defaults for mu_X, W_X_mol and d_X are used unless the entry carries its own.
+    """
+    p = fish.par
+    p_Xm = p.get("p_Xm")
+    if p_Xm is None:                               # back out from the primaries when the field is absent
+        p_Xm = p["p_Am"] / p["kap_X"]
+    mu_X = p.get("mu_X", MU_X)
+    d_X = p.get("d_X", D_X_DEFAULT)
+    L = (fish.W_g / (1.0 + fish.f * derived(p)[1])) ** (1.0 / 3.0)
+    l = fish.l()
+    s_eff = p["s_M"] if l > 1.0 else 1.0
+    p_X = c_T(p, fish.T_C) * fish.f * p_Xm * s_eff * L ** 2
+    J_X = p_X / mu_X
+    G_dry = J_X * W_X_MOL_DEFAULT
+    G_wet = G_dry / d_X
+    G_D = G_wet / fish.W_g
+    return {"p_X": float(p_X), "J_X": float(J_X), "G_dry": float(G_dry),
+            "G_wet": float(G_wet), "G_D": float(G_D), "L": float(L), "s_M_eff": float(s_eff)}
+
+
+def diet_rates(fish: "Fish", chem: Chemical, alpha_f: float = ALPHA_F_CENTRAL,
+               kBt: str = "zero", ker_route: str = "mechanistic",
+               plateau: float | None = None) -> dict:
+    """Food-only steady state and the loss terms it sits against.
+
+    Water is set to zero; the respiratory elimination term k_e,r still runs as the gill model's own, because
+    an animal eating chemical in clean water still loses it back out of the gill. This is the companion's
+    eq 9 at steady state with c_d = 0.
+    """
+    gill = rates(fish, chem, kBt, ker_route, plateau)
+    gD = ingestion(fish)["G_D"]
+    k2 = gill["k_er"] + gill["k_Bt"] + gill["k_g"]
+    BMF = alpha_f * gD / k2 if k2 > 0 else float("inf")
+    return {"alpha_f": float(alpha_f), "G_D": float(gD),
+            "k_er": gill["k_er"], "k_Bt": gill["k_Bt"], "k_g": gill["k_g"], "k2": float(k2),
+            "BMF": float(BMF), "limiting": gill["limiting"]}
+
+
+def alpha_f_interval(alpha_f: float = ALPHA_F_CENTRAL,
+                     log10_sd: float = ALPHA_F_LOG10_SD) -> tuple[float, float]:
+    """One-sigma interval on alpha_f at the lab reproducibility floor, in natural units."""
+    log_a = np.log10(alpha_f)
+    return float(10 ** (log_a - log10_sd)), float(10 ** (log_a + log10_sd))
+
+
+def in_hepta_domain(n_halogen: int) -> bool:
+    """True while the plug-flow bound this app reports still applies. The ieam-p8-alphaf run refuted the
+    bound outright for every heptachlorobiphenyl it ran, so the app withholds the number at and beyond."""
+    return n_halogen < HEPTA_HALOGENS
+
+
 @dataclass
 class Trajectory:
     t: np.ndarray                  # d
